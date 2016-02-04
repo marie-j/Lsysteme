@@ -15,6 +15,12 @@ systeme = lsystemeAnime (lsysteme axiomeVonKoch reglesVonKoch) (((-150,0),0),100
 main::IO()
 main = animate (InWindow "l-Système" (1000,1000) (0,0)) white systeme
 --main = display (InWindow "L-système" (1000, 1000) (0, 0)) white dessin
+--main = animate (InWindow "l-Système" (1000,1000) (0,0)) white vonKoch1Anime
+--main = animate (InWindow "l-Système" (1000,1000) (0,0)) white vonKoch2Anime
+--main = animate (InWindow "l-Système" (1000,1000) (0,0)) white hilbertAnime
+--main = animate (InWindow "l-Système" (1000,1000) (0,0)) white dragonAnime
+--main = animate (InWindow "l-Système" (1000,1000) (0,0)) white brindilleAnime
+--main = animate (InWindow "l-Système" (1000,1000) (0,0)) white broussailleAnime
 
 --Partie 1 : implémentation
 
@@ -131,11 +137,12 @@ filtresSymbolesTortue config (s:mots) | (intersect [s] symboles) == [] = filtres
 -- interpreteMot::Config->Mot->Picture
 
 --interpreteMot config mots =
---  line (snd (go config ed mots))
+--  line (snd (go config ed valides))
 --    where go config ed []       = ed
 --          go config ed (s:mots) = go config (interpreteSymbole config ed s) mots
 --          ed = (et, [fst et ] )
 --          et = etatInitial config
+--          valides = filtresSymboleTortue config mots
 
 
 --Q10 :
@@ -212,10 +219,29 @@ interpreteSymbole config ed '-' = (ets,snd ed)
 interpreteMot::Config->Mot->Picture
 
 interpreteMot config mots =
+  pictures (aux (go config ed valides))
+    where aux (_,[])            = []
+          aux (ets,p:paths)     = line p: aux (ets,paths)
+          go config ed []       = ed
+          go config ed (s:mots) = go config (interpreteSymbole config ed s) mots
+          ed                    = ([ets], [[fst ets]])
+          ets                   = etatInitial config
+          valides               = filtresSymbolesTortue config mots
 
-   where aux paths   = 
-         aux (xs:[]) = line xs
-         go config ed []       = ed
-         go config ed (s:mots) = go config (interpreteSymbole config ed s) mots
-         ed = (ets, [[fst (head ets)]])
-         ets = [etatInitial config]
+--pour effectuer d'autres tests
+
+brindille :: LSysteme
+brindille = lsysteme "F" regles
+    where regles 'F' = "F[-F]F[+F]F"
+          regles  s  = [s]
+
+broussaille :: LSysteme
+broussaille = lsysteme "F" regles
+    where regles 'F' = "FF-[-F+F+F]+[+F-F-F]"
+          regles  s  = [s]
+
+brindilleAnime :: Float -> Picture
+brindilleAnime = lsystemeAnime brindille (((0, -400), pi/2), 800, 1/3, 25*pi/180, "F+-[]")
+
+broussailleAnime :: Float -> Picture
+broussailleAnime = lsystemeAnime broussaille (((0, -400), pi/2), 500, 2/5, 25*pi/180, "F+-[]")
